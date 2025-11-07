@@ -7,6 +7,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+// Imports para el NUEVO login
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -15,52 +21,51 @@ import java.util.Optional;
 @CrossOrigin(origins = "http://localhost:3000") // Para conectar con el frontend
 public class UsuarioController {
     
+    // 1. FALTABA EL @AUTOWIRED AQUÍ
     @Autowired
     private UsuarioService usuarioService;
     
+    @Autowired
+    private AuthenticationManager authenticationManager;
+    
     @GetMapping
-    @PreAuthorize("hasRole('Administrador')") // 2. SOLO EL ROL 'Administrador'
+    @PreAuthorize("hasRole('Administrador')")
     public List<Usuario> getAllUsuarios() {
         return usuarioService.findAll();
     }
     
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('Administrador')") // 3. SOLO 'Administrador'
+    @PreAuthorize("hasRole('Administrador')")
     public ResponseEntity<Usuario> getUsuarioById(@PathVariable Long id) {
         Optional<Usuario> usuario = usuarioService.findById(id);
         return usuario.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
     
     @PostMapping
-    @PreAuthorize("hasRole('Administrador')") // 4. SOLO 'Administrador' PUEDE CREAR USUARIOS
+    @PreAuthorize("hasRole('Administrador')")
     public Usuario createUsuario(@RequestBody Usuario usuario) {
         return usuarioService.save(usuario);
     }
     
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('Administrador')") // 5. SOLO 'Administrador'
+    @PreAuthorize("hasRole('Administrador')")
     public ResponseEntity<Usuario> updateUsuario(@PathVariable Long id, @RequestBody Usuario usuarioDetails) {
         Optional<Usuario> usuario = usuarioService.findById(id);
         if (usuario.isPresent()) {
             Usuario usuarioExistente = usuario.get();
             usuarioExistente.setNombreUsuario(usuarioDetails.getNombreUsuario());
             usuarioExistente.setRol(usuarioDetails.getRol());
-            // Arreglamos esto en el paso anterior, ¡bien!
             usuarioExistente.setActivo(usuarioDetails.getActivo()); 
             
-            // Ojo: si actualizas la contraseña, también debes hashearla aquí.
-            // Por ahora, este update no toca la contraseña.
+            // (Manejo de actualización de contraseña iría aquí)
             
-            // NOTA: El .save() hasheará la contraseña OTRA VEZ si no tienes cuidado.
-            // Vamos a ajustar el 'save' para que no re-hashee una contraseña ya hasheada.
-            // (Lo haremos en el siguiente paso si quieres, por ahora esto funciona)
             return ResponseEntity.ok(usuarioService.save(usuarioExistente));
         }
         return ResponseEntity.notFound().build();
     }
     
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('Administrador')") // 6. SOLO 'Administrador'
+    @PreAuthorize("hasRole('Administrador')")
     public ResponseEntity<Void> deleteUsuario(@PathVariable Long id) {
         if (usuarioService.findById(id).isPresent()) {
             usuarioService.deleteById(id);
@@ -69,11 +74,26 @@ public class UsuarioController {
         return ResponseEntity.notFound().build();
     }
     
+    // 2. MÉTODO LOGIN COMPLETAMENTE REEMPLAZADO
     @PostMapping("/login")
-    // 7. EL LOGIN SIGUE SIENDO PÚBLICO (PERMITALL en SecurityConfig)
     public ResponseEntity<Usuario> login(@RequestBody LoginRequest loginRequest) {
-        Optional<Usuario> usuario = usuarioService.login(loginRequest.getNombreUsuario(), loginRequest.getContraseña());
-        return usuario.map(ResponseEntity::ok).orElse(ResponseEntity.status(401).build());
+        
+        // Esta línea crea la sesión de seguridad
+        Authentication authentication = authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(
+                loginRequest.getNombreUsuario(), 
+                loginRequest.getContraseña()
+            )
+        );
+        
+        // Le decimos a Spring que este usuario está ahora autenticado
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        
+        // Buscamos al usuario (sin la contraseña) para devolverlo al frontend
+        Optional<Usuario> usuario = usuarioService.findByUsername(authentication.getName());
+        
+        return usuario.map(ResponseEntity::ok)
+                      .orElse(ResponseEntity.status(401).build());
     }
     
     // Clase interna para el login

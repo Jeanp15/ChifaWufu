@@ -40,24 +40,16 @@ public class UsuarioService {
         usuarioRepository.deleteById(id);
     }
     
-    // 4. Modifica el método login para que sea seguro
-    public Optional<Usuario> login(String nombreUsuario, String contraseña) {
-        // Primero, busca al usuario por su nombre
-        Optional<Usuario> usuarioOptional = usuarioRepository.findByNombreUsuario(nombreUsuario);
-        
-        // Si el usuario existe...
-        if (usuarioOptional.isPresent()) {
-            Usuario usuario = usuarioOptional.get();
-            
-            // Compara la contraseña enviada (texto plano) con la hasheada (en la BD)
-            if (passwordEncoder.matches(contraseña, usuario.getContraseña())) {
-                // Si coinciden, retorna el usuario
-                return usuarioOptional;
-            }
-        }
-        
-        // Si el usuario no existe o la contraseña es incorrecta, retorna vacío
-        return Optional.empty();
+    // 4. EL MÉTODO 'login' SE ELIMINA Y SE REEMPLAZA POR ESTE:
+    /**
+     * Busca un usuario por su nombre de usuario (username).
+     * Este método es usado por el 'UsuarioController' después
+     * de que el 'AuthenticationManager' confirma la sesión.
+     * @param username El nombre de usuario a buscar.
+     * @return Un Optional con el Usuario (si se encuentra).
+     */
+    public Optional<Usuario> findByUsername(String username) {
+        return usuarioRepository.findByNombreUsuario(username);
     }
     
     public List<Usuario> findByRol(String rol) {
