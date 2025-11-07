@@ -20,6 +20,10 @@ public class Venta {
     
     @Column(nullable = false, length = 20)
     private String tipoComprobante;
+
+    // 1. CAMPO NUEVO
+    @Column(length = 20)
+    private String metodoDePago; // "EFECTIVO", "TARJETA", "YAPE", etc.
     
     // --- Relaciones ---
     
@@ -45,12 +49,14 @@ public class Venta {
     
     public Venta() {}
     
-    public Venta(Pedido pedido, Usuario usuario, Cliente cliente, String tipoComprobante) {
+    // 2. CONSTRUCTOR MODIFICADO (se añadió metodoDePago)
+    public Venta(Pedido pedido, Usuario usuario, Cliente cliente, String tipoComprobante, String metodoDePago) {
         this.pedido = pedido;
         this.usuario = usuario;
         this.cliente = cliente;
         this.tipoComprobante = tipoComprobante;
         this.total = pedido.getTotal(); // El total de la venta es el total del pedido
+        this.metodoDePago = metodoDePago; // 3. ASIGNACIÓN DEL NUEVO CAMPO
     }
     
     // --- Getters y Setters ---
@@ -109,5 +115,14 @@ public class Venta {
 
     public void setCliente(Cliente cliente) {
         this.cliente = cliente;
+    }
+
+    // 4. GETTERS Y SETTERS NUEVOS
+    public String getMetodoDePago() {
+        return metodoDePago;
+    }
+
+    public void setMetodoDePago(String metodoDePago) {
+        this.metodoDePago = metodoDePago;
     }
 }

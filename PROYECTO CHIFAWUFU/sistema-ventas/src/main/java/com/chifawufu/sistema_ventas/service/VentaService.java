@@ -1,5 +1,6 @@
 package com.chifawufu.sistema_ventas.service;
 
+import com.chifawufu.sistema_ventas.dto.CierreCajaDTO; // IMPORT NUEVO
 import com.chifawufu.sistema_ventas.dto.VentaRequestDTO;
 import com.chifawufu.sistema_ventas.model.*;
 import com.chifawufu.sistema_ventas.repository.*;
@@ -8,7 +9,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-// Imports para los reportes
+import java.math.BigDecimal; // IMPORT NUEVO
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -41,12 +42,13 @@ public class VentaService {
         Usuario cajero = usuarioRepository.findByNombreUsuario(nombreUsuario)
                 .orElseThrow(() -> new RuntimeException("Cajero no encontrado"));
 
-        // 4. Crear la Venta
+        // 4. Crear la Venta (MODIFICADO para incluir metodoDePago)
         Venta venta = new Venta(
             pedido, 
             cajero, 
             pedido.getCliente(), // El cliente se asignó al crear el pedido
-            request.tipoComprobante()
+            request.tipoComprobante(),
+            request.metodoDePago() // DATO NUEVO
         );
         Venta ventaGuardada = ventaRepository.save(venta);
         
@@ -66,7 +68,7 @@ public class VentaService {
         return ventaGuardada;
     }
     
-    // --- MÉTODOS DE REPORTE (LOS NUEVOS VAN AQUÍ) ---
+    // --- MÉTODOS DE REPORTE (Ya existentes) ---
 
     /**
      * Obtiene todas las ventas de una fecha específica. (RF09)
@@ -95,5 +97,59 @@ public class VentaService {
         LocalDateTime fin = fechaFin.atTime(LocalTime.MAX);
         
         return ventaRepository.findByFechaBetween(inicio, fin);
+    }
+
+    // --- MÉTODO NUEVO PARA CIERRE DE CAJA (CU10) ---
+
+    /**
+     * Realiza el Cierre de Caja para una fecha dada (CU10)
+     * @param fecha La fecha para el cierre
+     * @return Un DTO con todos los totales calculados
+     */
+    public CierreCajaDTO realizarCierreCaja(LocalDate fecha) {
+        
+        // 1. Obtenemos la lista de ventas (¡reutilizamos el método!)
+        List<Venta> ventasDelDia = getVentasDelDia(fecha);
+        
+        // 2. Inicializamos los contadores
+        BigDecimal totalGeneral = BigDecimal.ZERO;
+        BigDecimal totalEfectivo = BigDecimal.ZERO;
+        BigDecimal totalTarjeta = BigDecimal.ZERO;
+        BigDecimal totalOtros = BigDecimal.ZERO;
+        BigDecimal totalDelivery = BigDecimal.ZERO;
+        BigDecimal totalSalon = BigDecimal.ZERO;
+
+        // 3. Recorremos las ventas y sumamos
+        for (Venta venta : ventasDelDia) {
+            totalGeneral = totalGeneral.add(venta.getTotal());
+            
+            // Sumar por método de pago (CU10)
+            if ("EFECTIVO".equalsIgnoreCase(venta.getMetodoDePago())) {
+                totalEfectivo = totalEfectivo.add(venta.getTotal());
+            } else if ("TARJETA".equalsIgnoreCase(venta.getMetodoDePago())) {
+                totalTarjeta = totalTarjeta.add(venta.getTotal());
+            } else {
+                totalOtros = totalOtros.add(venta.getTotal());
+            }
+            
+            // Sumar por tipo de pedido (CU10)
+            if ("DELIVERY".equalsIgnoreCase(venta.getPedido().getTipo())) {
+                totalDelivery = totalDelivery.add(venta.getTotal());
+            } else { // Asumimos que todo lo que no es delivery es "SALON"
+                totalSalon = totalSalon.add(venta.getTotal());
+            }
+        }
+
+        // 4. Creamos el objeto de respuesta
+        return new CierreCajaDTO(
+            ventasDelDia.size(),
+            totalGeneral,
+            totalEfectivo,
+            totalTarjeta,
+            totalOtros,
+            totalDelivery,
+            totalSalon,
+            ventasDelDia
+        );
     }
 }

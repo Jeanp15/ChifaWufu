@@ -1,5 +1,6 @@
 package com.chifawufu.sistema_ventas.controller;
 
+import com.chifawufu.sistema_ventas.dto.CierreCajaDTO; // 1. IMPORT NUEVO
 import com.chifawufu.sistema_ventas.dto.VentaRequestDTO;
 import com.chifawufu.sistema_ventas.model.Venta;
 import com.chifawufu.sistema_ventas.service.VentaService;
@@ -61,5 +62,19 @@ public class VentaController {
             @RequestParam("fin") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fin) {
         
         return ResponseEntity.ok(ventaService.getVentasPorRango(inicio, fin));
+    }
+
+    // 2. MÉTODO NUEVO PARA CIERRE DE CAJA (CU10)
+    /**
+     * Endpoint para el Cierre de Caja (CU10)
+     * El frontend llamará a: GET /api/ventas/cierre-caja?fecha=2025-11-07
+     */
+    @GetMapping("/cierre-caja")
+    @PreAuthorize("hasAnyRole('Cajero', 'Administrador')") // Protegido para Cajero y Admin
+    public ResponseEntity<CierreCajaDTO> getCierreCaja(
+            @RequestParam("fecha") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
+        
+        CierreCajaDTO cierre = ventaService.realizarCierreCaja(fecha);
+        return ResponseEntity.ok(cierre);
     }
 }
