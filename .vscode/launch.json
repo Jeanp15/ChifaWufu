@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-SistemaVetasApplication<sistema-vetas>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.chifawufu.sistema_ventas.SistemaVetasApplication",
+            "projectName": "sistema-vetas",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
