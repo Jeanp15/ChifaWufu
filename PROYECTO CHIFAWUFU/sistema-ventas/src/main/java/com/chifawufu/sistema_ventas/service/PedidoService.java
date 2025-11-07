@@ -20,7 +20,7 @@ public class PedidoService {
     @Autowired private DetallePedidoRepository detallePedidoRepository;
     @Autowired private ProductoRepository productoRepository;
     @Autowired private UsuarioRepository usuarioRepository;
-    @Autowired private ClienteRepository clienteRepository; // Asumiremos que crearás este repositorio
+    @Autowired private ClienteRepository clienteRepository; // Ya está en uso, ¡genial!
 
     // @Transactional asegura que si algo falla (ej. no hay stock),
     // no se guarde NADA en la base de datos. O todo o nada.
@@ -33,15 +33,8 @@ public class PedidoService {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         // 2. Obtener el cliente
-        // (Nota: necesitarás crear ClienteRepository igual que hiciste con los otros)
-        // Cliente cliente = clienteRepository.findById(request.idCliente())
-        //         .orElse(null); // Permitir pedidos sin cliente registrado
-
-        // Por ahora, lo dejaremos simple sin el cliente:
-         Cliente cliente = null;
-         if (request.idCliente() != null) {
-            // Aquí iría la lógica para buscarlo con clienteRepository
-         }
+        Cliente cliente = clienteRepository.findById(request.idCliente())
+                .orElse(null); // Permitir pedidos sin cliente registrado
 
         // 3. Crear la cabecera del Pedido
         Pedido pedido = new Pedido(request.tipo(), request.mesa(), cliente, usuario);
@@ -77,6 +70,33 @@ public class PedidoService {
         pedido.setDetalles(detallesGuardados);
         pedido.setTotal(totalPedido);
         
+        return pedidoRepository.save(pedido);
+    }
+
+    // --- MÉTODOS DE CONSULTA (AQUÍ VA LO NUEVO PARA EL COCINERO) ---
+
+    /**
+     * Busca todos los pedidos que están en un estado específico.
+     * Usado principalmente por la cocina para ver los "PENDIENTE".
+     * (CU09)
+     * @param estado El estado a buscar (ej. "PENDIENTE")
+     * @return Lista de pedidos en ese estado
+     */
+    public List<Pedido> findByEstado(String estado) {
+        return pedidoRepository.findByEstado(estado);
+    }
+
+    /**
+     * Actualiza el estado de un pedido existente.
+     * @param idPedido El ID del pedido a actualizar
+     * @param nuevoEstado El nuevo estado (ej. "EN_PREPARACION", "LISTO", "CANCELADO")
+     * @return El pedido actualizado
+     */
+    public Pedido actualizarEstado(Long idPedido, String nuevoEstado) {
+        Pedido pedido = pedidoRepository.findById(idPedido)
+                .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
+        
+        pedido.setEstado(nuevoEstado);
         return pedidoRepository.save(pedido);
     }
 }

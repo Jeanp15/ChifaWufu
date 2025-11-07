@@ -8,6 +8,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+// Imports para los reportes
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
+
 @Service
 public class VentaService {
 
@@ -58,5 +64,36 @@ public class VentaService {
         facturaElectronicaRepository.save(factura);
 
         return ventaGuardada;
+    }
+    
+    // --- MÉTODOS DE REPORTE (LOS NUEVOS VAN AQUÍ) ---
+
+    /**
+     * Obtiene todas las ventas de una fecha específica. (RF09)
+     * @param fecha La fecha para el reporte (ej. 2025-11-07)
+     * @return Lista de ventas de ese día
+     */
+    public List<Venta> getVentasDelDia(LocalDate fecha) {
+        // Define el inicio del día (00:00:00)
+        LocalDateTime inicioDelDia = fecha.atStartOfDay();
+        // Define el fin del día (23:59:59.999...)
+        LocalDateTime finDelDia = fecha.atTime(LocalTime.MAX);
+        
+        return ventaRepository.findByFechaBetween(inicioDelDia, finDelDia);
+    }
+
+    /**
+     * Obtiene todas las ventas en un rango de fechas. (RF10)
+     * @param fechaInicio La fecha inicial del rango
+     * @param fechaFin La fecha final del rango
+     * @return Lista de ventas en ese rango
+     */
+    public List<Venta> getVentasPorRango(LocalDate fechaInicio, LocalDate fechaFin) {
+        // Define el inicio del rango (ej. 2025-11-01 00:00:00)
+        LocalDateTime inicio = fechaInicio.atStartOfDay();
+        // Define el fin del rango (ej. 2025-11-07 23:59:59.999...)
+        LocalDateTime fin = fechaFin.atTime(LocalTime.MAX);
+        
+        return ventaRepository.findByFechaBetween(inicio, fin);
     }
 }

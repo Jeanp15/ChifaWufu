@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/pedidos")
@@ -31,5 +32,33 @@ public class PedidoController {
         }
     }
     
-    // Aquí puedes agregar más endpoints (GET para ver pedidos, PUT para actualizar estado, etc.)
+    /**
+     * Endpoint para la Cocina.
+     * Obtiene todos los pedidos que están PENDIENTES.
+     * (CU09)
+     */
+    @GetMapping("/pendientes")
+    @PreAuthorize("hasAnyRole('Cocinero', 'Administrador')")
+    public ResponseEntity<List<Pedido>> getPedidosPendientes() {
+        List<Pedido> pedidos = pedidoService.findByEstado("PENDIENTE");
+        return ResponseEntity.ok(pedidos);
+    }
+
+    /**
+     * Endpoint para cambiar el estado de un pedido
+     * (Ej. La cocina lo marca como "EN_PREPARACION" o "LISTO")
+     */
+    @PutMapping("/{id}/estado")
+    @PreAuthorize("hasAnyRole('Cocinero', 'Administrador')")
+    public ResponseEntity<Pedido> actualizarEstadoPedido(
+            @PathVariable Long id, 
+            @RequestParam String estado) {
+        
+        try {
+            Pedido pedido = pedidoService.actualizarEstado(id, estado);
+            return ResponseEntity.ok(pedido);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

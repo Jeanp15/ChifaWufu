@@ -8,6 +8,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+// Imports para los reportes
+import java.time.LocalDate;
+import java.util.List;
+import org.springframework.format.annotation.DateTimeFormat;
+
 @RestController
 @RequestMapping("/api/ventas")
 @CrossOrigin(origins = "http://localhost:3000")
@@ -30,5 +35,31 @@ public class VentaController {
         }
     }
     
-    // Aquí podrías agregar endpoints GET para consultar Ventas (RF09, RF10)
+    // --- ENDPOINTS DE REPORTES (RF09 y RF10) ---
+    // Protegidos solo para el Administrador
+
+    /**
+     * Reporte de Ventas del Día (RF09)
+     * El frontend llamará a: GET /api/ventas/reporte/dia?fecha=2025-11-07
+     */
+    @GetMapping("/reporte/dia")
+    @PreAuthorize("hasRole('Administrador')")
+    public ResponseEntity<List<Venta>> getReporteVentasDelDia(
+            @RequestParam("fecha") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
+        
+        return ResponseEntity.ok(ventaService.getVentasDelDia(fecha));
+    }
+
+    /**
+     * Reporte de Ventas por Rango de Fechas (RF10)
+     * El frontend llamará a: GET /api/ventas/reporte/rango?inicio=2025-11-01&fin=2025-11-07
+     */
+    @GetMapping("/reporte/rango")
+    @PreAuthorize("hasRole('Administrador')")
+    public ResponseEntity<List<Venta>> getReporteVentasPorRango(
+            @RequestParam("inicio") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
+            @RequestParam("fin") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fin) {
+        
+        return ResponseEntity.ok(ventaService.getVentasPorRango(inicio, fin));
+    }
 }
