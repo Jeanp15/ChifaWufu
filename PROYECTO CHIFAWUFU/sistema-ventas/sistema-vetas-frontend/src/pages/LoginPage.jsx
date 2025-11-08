@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-// 1. CORRECCIÓN DE RUTAS (deben ser relativas)
+// --- RUTAS CORREGIDAS ---
 import { useAuth } from '../context/AuthContext.jsx'; 
-import { authService } from '../services/apiService.jsx'; // (apiService.js está bien)
+import { authService } from '../services/apiService.js'; // <- Usamos .js
+// -------------------------
 
 // Estilos simples para el formulario (opcional)
 const styles = {

@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.lang.NonNull; // 1. AÑADE ESTE IMPORT
+import org.springframework.lang.NonNull;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -16,7 +16,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 @RestController
 @RequestMapping("/api/ventas")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+// LA LÍNEA @CrossOrigin SE HA ELIMINADO
 public class VentaController {
     
     @Autowired
@@ -24,7 +24,6 @@ public class VentaController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('Cajero', 'Administrador')")
-    // 2. AÑADE @NonNull
     public ResponseEntity<?> registrarVenta(@RequestBody @NonNull VentaRequestDTO ventaRequest) {
         try {
             Venta ventaCreada = ventaService.registrarVenta(ventaRequest);
@@ -36,7 +35,6 @@ public class VentaController {
     
     @GetMapping("/reporte/dia")
     @PreAuthorize("hasRole('Administrador')")
-    // 3. AÑADE @NonNull
     public ResponseEntity<List<Venta>> getReporteVentasDelDia(
             @RequestParam("fecha") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @NonNull LocalDate fecha) {
         
@@ -45,7 +43,6 @@ public class VentaController {
 
     @GetMapping("/reporte/rango")
     @PreAuthorize("hasRole('Administrador')")
-    // 4. AÑADE @NonNull A AMBOS
     public ResponseEntity<List<Venta>> getReporteVentasPorRango(
             @RequestParam("inicio") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @NonNull LocalDate inicio,
             @RequestParam("fin") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @NonNull LocalDate fin) {
@@ -55,7 +52,6 @@ public class VentaController {
 
     @GetMapping("/cierre-caja")
     @PreAuthorize("hasAnyRole('Cajero', 'Administrador')")
-    // 5. AÑADE @NonNull
     public ResponseEntity<CierreCajaDTO> getCierreCaja(
             @RequestParam("fecha") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @NonNull LocalDate fecha) {
         

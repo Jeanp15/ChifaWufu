@@ -1,11 +1,14 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext.jsx'; // <- RUTA CORREGIDA
-// Necesitarás crear estas páginas en la carpeta /pages
-import LoginPage from './pages/LoginPage'; // <- RUTA CORREGIDA
-import AdminDashboard from './pages/AdminDashboard'; // <- RUTA CORREGIDA
-import CocinaDashboard from './pages/CocinaDashboard'; // <- RUTA CORREGIDA
-import CajeroDashboard from './pages/CajeroDashboard'; // <- RUTA CORREGIDA
+
+// --- RUTAS CORREGIDAS ---
+import LoginPage from './pages/LoginPage.jsx';
+import AdminDashboard from './pages/AdminDashboard.jsx';
+import CocinaDashboard from './pages/CocinaDashboard.jsx';
+import CajeroDashboard from './pages/CajeroDashboard.jsx';
+// -------------------------
+
 
 // Este es el componente MÁGICO que protege tus rutas
 const ProtectedRuta = ({ rolesPermitidos, children }) => {

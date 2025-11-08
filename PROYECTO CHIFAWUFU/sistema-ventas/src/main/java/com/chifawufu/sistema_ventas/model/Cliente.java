@@ -1,5 +1,6 @@
 package com.chifawufu.sistema_ventas.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore; // 1. AÑADE ESTE IMPORT
 import jakarta.persistence.*;
 import java.util.List;
 @Entity
@@ -15,6 +16,8 @@ public class Cliente {
     private String direccion;
     private String correo;
     
+    // 2. AÑADE @JsonIgnore AQUÍ
+    @JsonIgnore
     @OneToMany(mappedBy = "cliente")
     private List<Venta> ventas;
     

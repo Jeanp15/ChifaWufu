@@ -1,5 +1,6 @@
 package com.chifawufu.sistema_ventas.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore; // 1. AÑADE ESTE IMPORT
 import jakarta.persistence.*;
 import java.util.List;
 
@@ -22,6 +23,9 @@ public class Usuario {
     @Column(nullable = false)
     private Boolean activo = true;
     
+    // 2. AÑADE @JsonIgnore AQUÍ
+    // Esto rompe el bucle: "Cuando muestres un Usuario, no muestres sus ventas"
+    @JsonIgnore
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
     private List<Venta> ventas;
     

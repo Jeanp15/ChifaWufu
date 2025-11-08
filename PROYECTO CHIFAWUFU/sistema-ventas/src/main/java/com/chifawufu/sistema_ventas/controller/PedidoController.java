@@ -7,12 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.lang.NonNull; // 1. AÑADE ESTE IMPORT
+import org.springframework.lang.NonNull;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/pedidos")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+// LA LÍNEA @CrossOrigin SE HA ELIMINADO
 public class PedidoController {
 
     @Autowired
@@ -20,7 +20,6 @@ public class PedidoController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('Cajero', 'Mozo', 'Administrador')")
-    // 2. AÑADE @NonNull
     public ResponseEntity<Pedido> crearPedido(@RequestBody @NonNull PedidoRequestDTO pedidoRequest) {
         try {
             Pedido pedidoCreado = pedidoService.crearPedido(pedidoRequest);
@@ -39,7 +38,6 @@ public class PedidoController {
 
     @PutMapping("/{id}/estado")
     @PreAuthorize("hasAnyRole('Cocinero', 'Administrador')")
-    // 3. AÑADE @NonNull A AMBOS
     public ResponseEntity<Pedido> actualizarEstadoPedido(
             @PathVariable @NonNull Long id, 
             @RequestParam @NonNull String estado) {

@@ -10,14 +10,14 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.lang.NonNull; // 1. AÑADE ESTE IMPORT
+import org.springframework.lang.NonNull;
 import java.util.Objects;
 import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/usuarios")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+// LA LÍNEA @CrossOrigin SE HA ELIMINADO
 public class UsuarioController {
     
     @Autowired
@@ -26,14 +26,14 @@ public class UsuarioController {
     @Autowired
     private AuthenticationManager authenticationManager;
     
-    // ... (getAllUsuarios no cambia) ...
+    @GetMapping
+    @PreAuthorize("hasRole('Administrador')")
     public List<Usuario> getAllUsuarios() {
         return usuarioService.findAll();
     }
     
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('Administrador')")
-    // 2. AÑADE @NonNull
     public ResponseEntity<Usuario> getUsuarioById(@PathVariable @NonNull Long id) {
         Optional<Usuario> usuario = usuarioService.findById(id);
         return usuario.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
@@ -41,14 +41,12 @@ public class UsuarioController {
     
     @PostMapping
     @PreAuthorize("hasRole('Administrador')")
-    // 3. AÑADE @NonNull
     public Usuario createUsuario(@RequestBody @NonNull Usuario usuario) {
         return usuarioService.crearUsuario(usuario);
     }
     
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('Administrador')")
-    // 4. AÑADE @NonNull A AMBOS
     public ResponseEntity<Usuario> updateUsuario(@PathVariable @NonNull Long id, @RequestBody @NonNull Usuario usuarioDetails) {
         Optional<Usuario> usuario = usuarioService.findById(id);
         if (usuario.isPresent()) {
@@ -64,7 +62,6 @@ public class UsuarioController {
     
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('Administrador')")
-    // 5. AÑADE @NonNull
     public ResponseEntity<Void> deleteUsuario(@PathVariable @NonNull Long id) {
         if (usuarioService.findById(id).isPresent()) {
             usuarioService.deleteById(id);
@@ -85,8 +82,6 @@ public class UsuarioController {
         
         SecurityContextHolder.getContext().setAuthentication(authentication);
         
-        // 2. ¡AQUÍ ESTÁ LA CORRECCIÓN!
-        // Validamos que el nombre de usuario no sea nulo antes de pasarlo.
         String username = Objects.requireNonNull(authentication.getName(), "El nombre de usuario no puede ser nulo después del login");
         
         Optional<Usuario> usuario = usuarioService.findByUsername(username);
@@ -95,7 +90,7 @@ public class UsuarioController {
                       .orElse(ResponseEntity.status(401).build());
     }
     
-    // ... (Clase interna LoginRequest no cambia) ...
+    // Clase interna para el login
     public static class LoginRequest {
         private String nombreUsuario;
         private String contraseña;

@@ -1,5 +1,6 @@
 package com.chifawufu.sistema_ventas.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore; // 1. AÑADE ESTE IMPORT
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.math.BigDecimal;
@@ -39,6 +40,9 @@ public class Pedido {
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<DetallePedido> detalles;
     
+    // 2. AÑADE @JsonIgnore AQUÍ
+    // Esto rompe el bucle Pedido <-> Venta
+    @JsonIgnore
     @OneToOne(mappedBy = "pedido", cascade = CascadeType.ALL)
     private Venta venta;
     
