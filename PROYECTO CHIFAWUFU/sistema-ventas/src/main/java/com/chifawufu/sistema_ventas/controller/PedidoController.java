@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.lang.NonNull; // 1. AÑADE ESTE IMPORT
 import java.util.List;
 
 @RestController
@@ -17,26 +18,18 @@ public class PedidoController {
     @Autowired
     private PedidoService pedidoService;
 
-    // Endpoint para crear un nuevo pedido
-    // Protegido por roles según tu PDF
     @PostMapping
     @PreAuthorize("hasAnyRole('Cajero', 'Mozo', 'Administrador')")
-    public ResponseEntity<Pedido> crearPedido(@RequestBody PedidoRequestDTO pedidoRequest) {
+    // 2. AÑADE @NonNull
+    public ResponseEntity<Pedido> crearPedido(@RequestBody @NonNull PedidoRequestDTO pedidoRequest) {
         try {
             Pedido pedidoCreado = pedidoService.crearPedido(pedidoRequest);
             return ResponseEntity.ok(pedidoCreado);
         } catch (RuntimeException e) {
-            // Si algo falla (ej. sin stock), enviamos un mal request
             return ResponseEntity.badRequest().body(null); 
-            // En un proyecto real, aquí devolverías un mensaje de error JSON
         }
     }
     
-    /**
-     * Endpoint para la Cocina.
-     * Obtiene todos los pedidos que están PENDIENTES.
-     * (CU09)
-     */
     @GetMapping("/pendientes")
     @PreAuthorize("hasAnyRole('Cocinero', 'Administrador')")
     public ResponseEntity<List<Pedido>> getPedidosPendientes() {
@@ -44,15 +37,12 @@ public class PedidoController {
         return ResponseEntity.ok(pedidos);
     }
 
-    /**
-     * Endpoint para cambiar el estado de un pedido
-     * (Ej. La cocina lo marca como "EN_PREPARACION" o "LISTO")
-     */
     @PutMapping("/{id}/estado")
     @PreAuthorize("hasAnyRole('Cocinero', 'Administrador')")
+    // 3. AÑADE @NonNull A AMBOS
     public ResponseEntity<Pedido> actualizarEstadoPedido(
-            @PathVariable Long id, 
-            @RequestParam String estado) {
+            @PathVariable @NonNull Long id, 
+            @RequestParam @NonNull String estado) {
         
         try {
             Pedido pedido = pedidoService.actualizarEstado(id, estado);

@@ -4,11 +4,10 @@ import com.chifawufu.sistema_ventas.model.Usuario;
 import com.chifawufu.sistema_ventas.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-// 1. Importa estas dos clases nuevas
 import org.springframework.security.crypto.password.PasswordEncoder;
-import java.util.Optional;
+import org.springframework.lang.NonNull; // 1. IMPORTAMOS @NonNull
 
+import java.util.Optional;
 import java.util.List;
 
 @Service
@@ -17,7 +16,6 @@ public class UsuarioService {
     @Autowired
     private UsuarioRepository usuarioRepository;
     
-    // 2. Inyecta el "hasher" que creamos en el Paso 2
     @Autowired
     private PasswordEncoder passwordEncoder;
     
@@ -25,34 +23,37 @@ public class UsuarioService {
         return usuarioRepository.findAll();
     }
     
-    public Optional<Usuario> findById(Long id) {
+    // 2. AÑADIMOS @NonNull
+    public Optional<Usuario> findById(@NonNull Long id) {
         return usuarioRepository.findById(id);
     }
     
-    // 3. ¡MUY IMPORTANTE! Modifica el método save
-    public Usuario save(Usuario usuario) {
-        // Hashea la contraseña antes de guardarla
+    // 3. MÉTODO 'save' RENOMBRADO A 'crearUsuario'
+    // Este método es solo para CREAR usuarios y SIEMPRE hashea la contraseña
+    public Usuario crearUsuario(@NonNull Usuario usuario) {
         usuario.setContraseña(passwordEncoder.encode(usuario.getContraseña()));
         return usuarioRepository.save(usuario);
     }
+
+    // 4. NUEVO MÉTODO PARA ACTUALIZAR (corrige el error de lógica)
+    // Este método solo guarda cambios (ej. rol, activo) y NO TOCA la contraseña
+    public Usuario actualizarUsuario(@NonNull Usuario usuario) {
+        // No hasheamos la contraseña, solo guardamos el objeto
+        return usuarioRepository.save(usuario);
+    }
     
-    public void deleteById(Long id) {
+    // 5. AÑADIMOS @NonNull
+    public void deleteById(@NonNull Long id) {
         usuarioRepository.deleteById(id);
     }
     
-    // 4. EL MÉTODO 'login' SE ELIMINA Y SE REEMPLAZA POR ESTE:
-    /**
-     * Busca un usuario por su nombre de usuario (username).
-     * Este método es usado por el 'UsuarioController' después
-     * de que el 'AuthenticationManager' confirma la sesión.
-     * @param username El nombre de usuario a buscar.
-     * @return Un Optional con el Usuario (si se encuentra).
-     */
-    public Optional<Usuario> findByUsername(String username) {
+    // 6. AÑADIMOS @NonNull
+    public Optional<Usuario> findByUsername(@NonNull String username) {
         return usuarioRepository.findByNombreUsuario(username);
     }
     
-    public List<Usuario> findByRol(String rol) {
+    // 7. AÑADIMOS @NonNull
+    public List<Usuario> findByRol(@NonNull String rol) {
         return usuarioRepository.findByRol(rol);
     }
 }

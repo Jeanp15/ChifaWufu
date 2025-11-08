@@ -1,9 +1,11 @@
 package com.chifawufu.sistema_ventas.service;
 
+
 import com.chifawufu.sistema_ventas.model.Producto;
 import com.chifawufu.sistema_ventas.repository.ProductoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.lang.NonNull;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,28 +16,26 @@ public class ProductoService {
     @Autowired
     private ProductoRepository productoRepository;
 
-    // Obtener todos los productos
     public List<Producto> findAll() {
         return productoRepository.findAll();
     }
     
-    // Obtener solo los productos activos (para el menú)
     public List<Producto> findActivos() {
         return productoRepository.findByActivoTrue();
     }
 
-    // Obtener un producto por ID
-    public Optional<Producto> findById(Long id) {
+    // 2. AÑADE @NonNull
+    public Optional<Producto> findById(@NonNull Long id) {
         return productoRepository.findById(id);
     }
 
-    // Guardar un producto (ya sea nuevo o para actualizar)
-    public Producto save(Producto producto) {
+    // 3. AÑADE @NonNull
+    public Producto save(@NonNull Producto producto) {
         return productoRepository.save(producto);
     }
 
-    // Borrar un producto por ID
-    public void deleteById(Long id) {
+    // 4. AÑADE @NonNull
+    public void deleteById(@NonNull Long id) {
         productoRepository.deleteById(id);
     }
 }

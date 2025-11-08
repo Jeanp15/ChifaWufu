@@ -6,50 +6,50 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-// Imports para el NUEVO login
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-
+import org.springframework.lang.NonNull; // 1. AÑADE ESTE IMPORT
+import java.util.Objects;
 import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/usuarios")
-@CrossOrigin(origins = "http://localhost:3000") // Para conectar con el frontend
+@CrossOrigin(origins = "http://localhost:3000")
 public class UsuarioController {
     
-    // 1. FALTABA EL @AUTOWIRED AQUÍ
     @Autowired
     private UsuarioService usuarioService;
     
     @Autowired
     private AuthenticationManager authenticationManager;
     
-    @GetMapping
-    @PreAuthorize("hasRole('Administrador')")
+    // ... (getAllUsuarios no cambia) ...
     public List<Usuario> getAllUsuarios() {
         return usuarioService.findAll();
     }
     
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('Administrador')")
-    public ResponseEntity<Usuario> getUsuarioById(@PathVariable Long id) {
+    // 2. AÑADE @NonNull
+    public ResponseEntity<Usuario> getUsuarioById(@PathVariable @NonNull Long id) {
         Optional<Usuario> usuario = usuarioService.findById(id);
         return usuario.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
     
     @PostMapping
     @PreAuthorize("hasRole('Administrador')")
-    public Usuario createUsuario(@RequestBody Usuario usuario) {
-        return usuarioService.save(usuario);
+    // 3. AÑADE @NonNull
+    public Usuario createUsuario(@RequestBody @NonNull Usuario usuario) {
+        return usuarioService.crearUsuario(usuario);
     }
     
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('Administrador')")
-    public ResponseEntity<Usuario> updateUsuario(@PathVariable Long id, @RequestBody Usuario usuarioDetails) {
+    // 4. AÑADE @NonNull A AMBOS
+    public ResponseEntity<Usuario> updateUsuario(@PathVariable @NonNull Long id, @RequestBody @NonNull Usuario usuarioDetails) {
         Optional<Usuario> usuario = usuarioService.findById(id);
         if (usuario.isPresent()) {
             Usuario usuarioExistente = usuario.get();
@@ -57,16 +57,15 @@ public class UsuarioController {
             usuarioExistente.setRol(usuarioDetails.getRol());
             usuarioExistente.setActivo(usuarioDetails.getActivo()); 
             
-            // (Manejo de actualización de contraseña iría aquí)
-            
-            return ResponseEntity.ok(usuarioService.save(usuarioExistente));
+            return ResponseEntity.ok(usuarioService.actualizarUsuario(usuarioExistente));
         }
         return ResponseEntity.notFound().build();
     }
     
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('Administrador')")
-    public ResponseEntity<Void> deleteUsuario(@PathVariable Long id) {
+    // 5. AÑADE @NonNull
+    public ResponseEntity<Void> deleteUsuario(@PathVariable @NonNull Long id) {
         if (usuarioService.findById(id).isPresent()) {
             usuarioService.deleteById(id);
             return ResponseEntity.ok().build();
@@ -74,11 +73,9 @@ public class UsuarioController {
         return ResponseEntity.notFound().build();
     }
     
-    // 2. MÉTODO LOGIN COMPLETAMENTE REEMPLAZADO
     @PostMapping("/login")
-    public ResponseEntity<Usuario> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<Usuario> login(@RequestBody @NonNull LoginRequest loginRequest) {
         
-        // Esta línea crea la sesión de seguridad
         Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(
                 loginRequest.getNombreUsuario(), 
@@ -86,25 +83,24 @@ public class UsuarioController {
             )
         );
         
-        // Le decimos a Spring que este usuario está ahora autenticado
         SecurityContextHolder.getContext().setAuthentication(authentication);
         
-        // Buscamos al usuario (sin la contraseña) para devolverlo al frontend
-        Optional<Usuario> usuario = usuarioService.findByUsername(authentication.getName());
+        // 2. ¡AQUÍ ESTÁ LA CORRECCIÓN!
+        // Validamos que el nombre de usuario no sea nulo antes de pasarlo.
+        String username = Objects.requireNonNull(authentication.getName(), "El nombre de usuario no puede ser nulo después del login");
+        
+        Optional<Usuario> usuario = usuarioService.findByUsername(username);
         
         return usuario.map(ResponseEntity::ok)
                       .orElse(ResponseEntity.status(401).build());
     }
     
-    // Clase interna para el login
+    // ... (Clase interna LoginRequest no cambia) ...
     public static class LoginRequest {
         private String nombreUsuario;
         private String contraseña;
-        
-        // Getters y Setters
         public String getNombreUsuario() { return nombreUsuario; }
         public void setNombreUsuario(String nombreUsuario) { this.nombreUsuario = nombreUsuario; }
-        
         public String getContraseña() { return contraseña; }
         public void setContraseña(String contraseña) { this.contraseña = contraseña; }
     }

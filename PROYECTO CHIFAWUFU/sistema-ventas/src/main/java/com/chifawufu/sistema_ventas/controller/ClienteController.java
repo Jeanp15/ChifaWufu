@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.lang.NonNull; // 1. AÑADE ESTE IMPORT
 
 import java.util.List;
 import java.util.Optional;
@@ -18,36 +19,31 @@ public class ClienteController {
     @Autowired
     private ClienteService clienteService;
 
-    // --- Endpoints CRUD para Clientes (RF08) ---
-    // Protegido para los roles que atienden al público
-
-    // Obtener todos los clientes
-    @GetMapping
-    @PreAuthorize("hasAnyRole('Cajero', 'Mozo', 'Administrador')")
+    // ... (getAllClientes no cambia) ...
     public List<Cliente> getAllClientes() {
         return clienteService.findAll();
     }
 
-    // Obtener un solo cliente por ID
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('Cajero', 'Mozo', 'Administrador')")
-    public ResponseEntity<Cliente> getClienteById(@PathVariable Long id) {
+    // 2. AÑADE @NonNull
+    public ResponseEntity<Cliente> getClienteById(@PathVariable @NonNull Long id) {
         Optional<Cliente> cliente = clienteService.findById(id);
         return cliente.map(ResponseEntity::ok)
                       .orElse(ResponseEntity.notFound().build());
     }
 
-    // Registrar un nuevo cliente
     @PostMapping
     @PreAuthorize("hasAnyRole('Cajero', 'Mozo', 'Administrador')")
-    public Cliente createCliente(@RequestBody Cliente cliente) {
+    // 3. AÑADE @NonNull
+    public Cliente createCliente(@RequestBody @NonNull Cliente cliente) {
         return clienteService.save(cliente);
     }
 
-    // Actualizar un cliente existente (RF08)
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('Cajero', 'Mozo', 'Administrador')")
-    public ResponseEntity<Cliente> updateCliente(@PathVariable Long id, @RequestBody Cliente clienteDetails) {
+    // 4. AÑADE @NonNull A AMBOS
+    public ResponseEntity<Cliente> updateCliente(@PathVariable @NonNull Long id, @RequestBody @NonNull Cliente clienteDetails) {
         Optional<Cliente> clienteOptional = clienteService.findById(id);
 
         if (clienteOptional.isPresent()) {
@@ -64,10 +60,10 @@ public class ClienteController {
         }
     }
 
-    // Borrar un cliente (Solo Admin, por seguridad)
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('Administrador')")
-    public ResponseEntity<Void> deleteCliente(@PathVariable Long id) {
+    // 5. AÑADE @NonNull
+    public ResponseEntity<Void> deleteCliente(@PathVariable @NonNull Long id) {
         if (clienteService.findById(id).isPresent()) {
             clienteService.deleteById(id);
             return ResponseEntity.ok().build();

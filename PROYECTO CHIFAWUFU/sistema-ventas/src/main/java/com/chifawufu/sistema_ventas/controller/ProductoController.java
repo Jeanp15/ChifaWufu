@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.lang.NonNull; // 1. AÑADE ESTE IMPORT
 
 import java.util.List;
 import java.util.Optional;
@@ -18,45 +19,35 @@ public class ProductoController {
     @Autowired
     private ProductoService productoService;
 
-    // --- Endpoints de LECTURA (Read) ---
-
-    // Obtener TODOS los productos (para el admin)
-    @GetMapping
-    @PreAuthorize("hasRole('Administrador')")
+    // ... (getAllProductos y getProductosActivos no cambian) ...
     public List<Producto> getAllProductos() {
         return productoService.findAll();
     }
-    
-    // Obtener solo productos ACTIVOS (para el menú del Mozo/Cajero)
-    @GetMapping("/activos")
-    @PreAuthorize("hasAnyRole('Administrador', 'Cajero', 'Mozo')")
     public List<Producto> getProductosActivos() {
         return productoService.findActivos();
     }
 
-    // Obtener un producto por ID
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('Administrador', 'Cajero', 'Mozo')")
-    public ResponseEntity<Producto> getProductoById(@PathVariable Long id) {
+    // 2. AÑADE @NonNull
+    public ResponseEntity<Producto> getProductoById(@PathVariable @NonNull Long id) {
         Optional<Producto> producto = productoService.findById(id);
         return producto.map(ResponseEntity::ok)
                        .orElse(ResponseEntity.notFound().build());
     }
 
-    // --- Endpoints de ESCRITURA (CUD) ---
-    // (Solo el Administrador puede gestionar el catálogo según CU02)
-
-    // Crear un nuevo producto
     @PostMapping
     @PreAuthorize("hasRole('Administrador')")
-    public Producto createProducto(@RequestBody Producto producto) {
+    // 3. AÑADE @NonNull
+    public Producto createProducto(@RequestBody @NonNull Producto producto) {
         return productoService.save(producto);
     }
 
-    // Actualizar un producto existente
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('Administrador')")
-    public ResponseEntity<Producto> updateProducto(@PathVariable Long id, @RequestBody Producto productoDetails) {
+    // 4. AÑADE @NonNull A AMBOS
+    public ResponseEntity<Producto> updateProducto(@PathVariable @NonNull Long id, @RequestBody @NonNull Producto productoDetails) {
         Optional<Producto> productoOptional = productoService.findById(id);
 
         if (productoOptional.isPresent()) {
@@ -74,10 +65,10 @@ public class ProductoController {
         }
     }
 
-    // Borrar un producto
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('Administrador')")
-    public ResponseEntity<Void> deleteProducto(@PathVariable Long id) {
+    // 5. AÑADE @NonNull
+    public ResponseEntity<Void> deleteProducto(@PathVariable @NonNull Long id) {
         if (productoService.findById(id).isPresent()) {
             productoService.deleteById(id);
             return ResponseEntity.ok().build();
