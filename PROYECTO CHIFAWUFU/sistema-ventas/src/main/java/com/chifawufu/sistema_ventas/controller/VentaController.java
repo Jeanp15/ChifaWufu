@@ -16,7 +16,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 @RestController
 @RequestMapping("/api/ventas")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class VentaController {
     
     @Autowired
