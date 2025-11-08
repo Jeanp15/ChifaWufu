@@ -1,11 +1,11 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from './context/AuthContext';
+import { useAuth } from '../../../sistema-vetas-frontend/src/context/AuthContext.jsx';
 // Necesitarás crear estas páginas en la carpeta /pages
-import LoginPage from './pages/LoginPage';
-import AdminDashboard from './pages/AdminDashboard';
-import CocinaDashboard from './pages/CocinaDashboard';
-import CajeroDashboard from './pages/CajeroDashboard';
+import LoginPage from '../../../sistema-vetas-frontend/src/pages/LoginPage';
+import AdminDashboard from '../../../sistema-vetas-frontend/src/pages/AdminDashboard';
+import CocinaDashboard from '../../../sistema-vetas-frontend/src/pages/CocinaDashboard';
+import CajeroDashboard from '../../../sistema-vetas-frontend/src/pages/CajeroDashboard';
 
 // Este es el componente MÁGICO que protege tus rutas
 const ProtectedRuta = ({ rolesPermitidos, children }) => {
