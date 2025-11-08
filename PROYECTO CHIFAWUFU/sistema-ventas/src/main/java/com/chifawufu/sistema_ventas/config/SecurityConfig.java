@@ -10,33 +10,36 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-
+import org.springframework.security.config.Customizer;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    // 1. Este es el "hasher"
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
     }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // 2. Estas son las reglas de tu API
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable()) // Desactivamos CSRF para que la API sea fácil de usar
+            .csrf(csrf -> csrf.disable()) 
             .authorizeHttpRequests(auth -> auth
-                // Permitimos que CUALQUIERA pueda crear un usuario y hacer login
+                // Permitimos el login y la creación de usuarios (DataInitializer)
                 .requestMatchers("/api/usuarios", "/api/usuarios/login").permitAll()
-                // Todas las demás peticiones (GET, PUT, DELETE) necesitarán autenticación
+                // El resto de peticiones necesitan autenticación
                 .anyRequest().authenticated()
             );
+
+        // ¡¡ESTA ES LA LÍNEA QUE FALTABA!!
+        // Esto activa la autenticación básica (con usuario y contraseña)
+        http.httpBasic(Customizer.withDefaults());
 
         return http.build();
     }

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; // 1. El "corazón"
-import { authService } from '../services/apiService'; // 2. El "cerebro"
+// 1. CORRECCIÓN DE RUTAS (deben ser relativas)
+import { useAuth } from '../context/AuthContext.jsx'; 
+import { authService } from '../services/apiService.jsx'; // (apiService.js está bien)
 
 // Estilos simples para el formulario (opcional)
 const styles = {
@@ -23,8 +24,8 @@ export default function LoginPage() {
 
     // Función que se llama al enviar el formulario
     const handleSubmit = async (e) => {
-        e.preventDefault(); // Evita que la página se recargue
-        setError(''); // Limpia errores antiguos
+        e.preventDefault(); 
+        setError(''); 
 
         try {
             // 3. ¡Aquí ocurre la magia! Llamamos a la API
@@ -34,7 +35,6 @@ export default function LoginPage() {
             login(usuarioData);
 
             // 5. Redirigimos al usuario según su ROL
-            // (Esto viene del backend, de tu entidad Usuario.java)
             switch (usuarioData.rol) {
                 case 'Administrador':
                     navigate('/admin');
@@ -49,7 +49,7 @@ export default function LoginPage() {
                     navigate('/mozo'); // (Añade esta ruta en App.jsx si la necesitas)
                     break;
                 default:
-                    navigate('/login'); // Si no tiene rol, lo dejamos en login
+                    navigate('/login'); 
             }
 
         } catch (err) {

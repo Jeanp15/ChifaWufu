@@ -1,11 +1,11 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from '../../../sistema-vetas-frontend/src/context/AuthContext.jsx';
+import { useAuth } from './context/AuthContext.jsx'; // <- RUTA CORREGIDA
 // Necesitarás crear estas páginas en la carpeta /pages
-import LoginPage from '../../../sistema-vetas-frontend/src/pages/LoginPage';
-import AdminDashboard from '../../../sistema-vetas-frontend/src/pages/AdminDashboard';
-import CocinaDashboard from '../../../sistema-vetas-frontend/src/pages/CocinaDashboard';
-import CajeroDashboard from '../../../sistema-vetas-frontend/src/pages/CajeroDashboard';
+import LoginPage from './pages/LoginPage'; // <- RUTA CORREGIDA
+import AdminDashboard from './pages/AdminDashboard'; // <- RUTA CORREGIDA
+import CocinaDashboard from './pages/CocinaDashboard'; // <- RUTA CORREGIDA
+import CajeroDashboard from './pages/CajeroDashboard'; // <- RUTA CORREGIDA
 
 // Este es el componente MÁGICO que protege tus rutas
 const ProtectedRuta = ({ rolesPermitidos, children }) => {
