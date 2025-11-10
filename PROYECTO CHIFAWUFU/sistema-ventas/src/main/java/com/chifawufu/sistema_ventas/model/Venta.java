@@ -1,5 +1,9 @@
 package com.chifawufu.sistema_ventas.model;
 
+// --- 1. ¡QUITA ESTA IMPORTACIÓN! ---
+// import com.fasterxml.jackson.annotation.JsonIgnore; 
+// ---------------------------------
+
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -21,26 +25,20 @@ public class Venta {
     @Column(nullable = false, length = 20)
     private String tipoComprobante;
 
-    // 1. CAMPO NUEVO
     @Column(length = 20)
-    private String metodoDePago; // "EFECTIVO", "TARJETA", "YAPE", etc.
+    private String metodoDePago;
     
     // --- Relaciones ---
     
-    // Venta <-> Pedido (Uno a Uno)
-    // Una venta se genera a partir de un pedido
     @OneToOne
     @JoinColumn(name = "id_pedido", nullable = false)
     private Pedido pedido;
     
-    // Venta <-> Usuario (Muchos a Uno)
-    // Muchas ventas pueden ser registradas por un usuario
+    // --- 2. ¡QUITA EL @JsonIgnore DE AQUÍ! ---
     @ManyToOne
     @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
     
-    // Venta <-> Cliente (Muchos a Uno)
-    // Muchas ventas pueden pertenecer a un cliente
     @ManyToOne
     @JoinColumn(name = "id_cliente")
     private Cliente cliente;
@@ -49,18 +47,18 @@ public class Venta {
     
     public Venta() {}
     
-    // 2. CONSTRUCTOR MODIFICADO (se añadió metodoDePago)
     public Venta(Pedido pedido, Usuario usuario, Cliente cliente, String tipoComprobante, String metodoDePago) {
         this.pedido = pedido;
         this.usuario = usuario;
         this.cliente = cliente;
         this.tipoComprobante = tipoComprobante;
-        this.total = pedido.getTotal(); // El total de la venta es el total del pedido
-        this.metodoDePago = metodoDePago; // 3. ASIGNACIÓN DEL NUEVO CAMPO
+        this.total = pedido.getTotal(); 
+        this.metodoDePago = metodoDePago;
     }
     
     // --- Getters y Setters ---
-
+    // (El resto de tu clase sigue igual)
+    // ...
     public Long getIdVenta() {
         return idVenta;
     }
@@ -117,7 +115,6 @@ public class Venta {
         this.cliente = cliente;
     }
 
-    // 4. GETTERS Y SETTERS NUEVOS
     public String getMetodoDePago() {
         return metodoDePago;
     }

@@ -1,8 +1,12 @@
 package com.chifawufu.sistema_ventas.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore; // 1. AÑADE ESTE IMPORT
+// --- 1. ¡AÑADE ESTA IMPORTACIÓN! ---
+import com.fasterxml.jackson.annotation.JsonIgnore;
+// ------------------------------------
+
 import jakarta.persistence.*;
 import java.util.List;
+
 @Entity
 @Table(name = "cliente")
 public class Cliente {
@@ -16,8 +20,10 @@ public class Cliente {
     private String direccion;
     private String correo;
     
-    // 2. AÑADE @JsonIgnore AQUÍ
+    // --- 2. ¡AÑADE @JsonIgnore AQUÍ! ---
+    // Esto rompe el bucle (Venta -> Cliente -> Venta)
     @JsonIgnore
+    // ----------------------------------
     @OneToMany(mappedBy = "cliente")
     private List<Venta> ventas;
     

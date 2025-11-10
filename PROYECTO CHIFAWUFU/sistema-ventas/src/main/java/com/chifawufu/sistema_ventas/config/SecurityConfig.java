@@ -1,5 +1,13 @@
 package com.chifawufu.sistema_ventas.config;
 
+// --- 1. AÑADE ESTAS IMPORTACIONES ---
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import java.util.List; // Asegúrate de importar java.util.List
+import org.springframework.http.HttpMethod; // Para las peticiones OPTIONS
+// ---------------------------------
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -10,11 +18,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.Customizer;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.security.config.Customizer; 
+// --- QUITA ESTAS IMPORTACIONES (YA NO SE USAN) ---
+// import org.springframework.web.servlet.config.annotation.CorsRegistry;
+// import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+// import org.springframework.lang.NonNull;
+// ---------------------------------------------
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.lang.NonNull;
+
 
 @Configuration
 @EnableWebSecurity
@@ -30,49 +41,62 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // --- Configuración Global de CORS (Maneja el CrossOrigin por nosotros) ---
+    // --- 2. HEMOS QUITADO EL BEAN 'WebMvcConfigurer corsConfigurer()' ---
+    // ... ya no es necesario ...
+
+    // --- 3. AÑADIMOS ESTE NUEVO BEAN PARA CONFIGURAR CORS ---
     @Bean
-    public WebMvcConfigurer corsConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(@NonNull CorsRegistry registry) {
-                registry.addMapping("/api/**") // Aplica a toda tu API
-                    .allowedOrigins("http://localhost:5173") // Tu frontend
-                    .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                    .allowedHeaders("*")
-                    .allowCredentials(true); // ¡La parte más importante!
-            }
-        };
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        
+        // Define de dónde permites solicitudes (tu frontend de React)
+        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
+        
+        // Define los métodos HTTP que permites
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        
+        // Permite todas las cabeceras (como "Content-Type", "Authorization", etc.)
+        configuration.setAllowedHeaders(List.of("*"));
+        
+        // ¡LA PARTE MÁS IMPORTANTE! Permite que el navegador envíe cookies de sesión
+        configuration.setAllowCredentials(true);
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        // Aplica esta configuración a toda tu API (cualquier ruta bajo /api/)
+        source.registerCorsConfiguration("/api/**", configuration);
+        
+        return source;
     }
+    // --------------------------------------------------------
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // 1. APLICAMOS LA CONFIGURACIÓN GLOBAL DE CORS
-            .cors(Customizer.withDefaults())
+            // 4. APLICA LA CONFIGURACIÓN CORS DEL BEAN DE ARRIBA
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             
-            // 2. DESACTIVAMOS CSRF (común para APIs)
+            // 5. DESACTIVAMOS CSRF (común para APIs)
             .csrf(csrf -> csrf.disable()) 
             
-            // 3. ¡AQUÍ ESTÁ LA CORRECCIÓN!
+            // 6. ¡REGLAS DE AUTORIZACIÓN ACTUALIZADAS!
             .authorizeHttpRequests(auth -> auth
-                // Solo permitimos que la PÁGINA DE LOGIN sea pública
+                // Permite todas las peticiones "pre-vuelo" OPTIONS
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                
+                // Permite la URL de login
                 .requestMatchers("/api/usuarios/login").permitAll()
                 
-                // Todo lo demás (incluyendo /api/usuarios) requiere autenticación
+                // Exige autenticación para CUALQUIER OTRA petición
                 .anyRequest().authenticated()
             )
             
-            // 4. MANEJADOR DE ERRORES
-            // En lugar del pop-up, solo devuelve un error 401
+            // 7. MANEJADOR DE ERRORES (devuelve 401 en lugar de un pop-up)
             .exceptionHandling(e -> 
                 e.authenticationEntryPoint((request, response, authException) -> 
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "No autorizado")
                 )
             );
         
-        // 5. ¡Ya no usamos httpBasic()!
-
         return http.build();
     }
 }

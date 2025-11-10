@@ -1,5 +1,9 @@
 package com.chifawufu.sistema_ventas.model;
 
+// --- 1. AÑADE ESTA IMPORTACIÓN ---
+import com.fasterxml.jackson.annotation.JsonIgnore;
+// ---------------------------------
+
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 
@@ -24,6 +28,10 @@ public class DetallePedido {
     
     // DetallePedido <-> Pedido (Muchos a Uno)
     // Muchos detalles pertenecen a un pedido
+    
+    // --- 2. AÑADE ESTA ANOTACIÓN AQUÍ ---
+    @JsonIgnore // Esto rompe el bucle infinito (Pedido -> DetallePedido -> Pedido)
+    // -----------------------------------
     @ManyToOne
     @JoinColumn(name = "id_pedido", nullable = false)
     private Pedido pedido;

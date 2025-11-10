@@ -1,6 +1,9 @@
 package com.chifawufu.sistema_ventas.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore; // 1. AÑADE ESTE IMPORT
+// --- 1. ASEGÚRATE DE TENER ESTA IMPORTACIÓN ---
+import com.fasterxml.jackson.annotation.JsonIgnore;
+// ---------------------------------------------
+
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.math.BigDecimal;
@@ -29,10 +32,19 @@ public class Pedido {
     private BigDecimal total = BigDecimal.ZERO;
     
     // Relaciones
+    
+    // --- 2. AÑADE @JsonIgnore AQUÍ ---
+    // Esto rompe el bucle: Venta -> Pedido -> Cliente -> Venta
+    @JsonIgnore
+    // ---------------------------------
     @ManyToOne
     @JoinColumn(name = "id_cliente")
     private Cliente cliente;
     
+    // --- 3. AÑADE @JsonIgnore AQUÍ ---
+    // Esto rompe el bucle: Usuario -> Venta -> Pedido -> Usuario
+    @JsonIgnore
+    // ---------------------------------
     @ManyToOne
     @JoinColumn(name = "id_usuario")
     private Usuario usuario;
@@ -40,8 +52,7 @@ public class Pedido {
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<DetallePedido> detalles;
     
-    // 2. AÑADE @JsonIgnore AQUÍ
-    // Esto rompe el bucle Pedido <-> Venta
+    // Esto ya lo tenías, está perfecto
     @JsonIgnore
     @OneToOne(mappedBy = "pedido", cascade = CascadeType.ALL)
     private Venta venta;
